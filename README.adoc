@@ -1,0 +1,186 @@
+= Citation Station
+:toc:
+:toclevels: 2
+:sectnums:
+
+A Rust workspace for managing bibliographic citations and references.
+
+== Overview
+
+Citation Station is a modern Rust library for handling academic citations and bibliography management. It provides a clean, type-safe API for working with bibliographic data in various formats.
+
+== Features
+
+* 📚 **Citation Management**: Create, validate, and organize bibliographic entries
+* 🎨 **Multiple Formats**: Support for APA, MLA, and Chicago citation styles
+* 🔍 **Search & Filter**: Find citations by author, year, or keyword
+* 📝 **Export Options**: Export bibliographies to BibTeX, JSON, and other formats
+* ⚡ **Fast & Safe**: Built with Rust for performance and memory safety
+* 🧪 **Well Tested**: Comprehensive test suite ensuring reliability
+
+== Quick Start
+
+Add `citation_station` to your `Cargo.toml`:
+
+[source,toml]
+----
+[dependencies]
+citation_station = "0.1"
+----
+
+=== Basic Usage
+
+[source,rust]
+----
+use citation_core::{Citation, Bibliography};
+
+fn main() {
+    // Create a new citation
+    let mut citation = Citation::new(
+    );
+    
+    citation.year = Some(2023);
+    citation.venue = Some("Rust Magazine".to_string());
+    
+    // Create a bibliography and add the citation
+    let mut bibliography = Bibliography::new();
+    bibliography.add_citation(citation).unwrap();
+    
+    // Format in APA style
+    for citation in bibliography.citations() {
+        println!("{}", citation.format_apa());
+    }
+}
+----
+
+== Architecture
+
+The workspace is organized as follows:
+
+----
+citation_station/
+├── citation_station/          # Core library functionality
+│   ├── src/
+│   │   └── lib.rs          # Main library code
+│   └── Cargo.toml          # Core crate configuration
+├── Cargo.toml              # Workspace configuration
+└── README.adoc             # This file
+----
+
+=== Core Types
+
+==== `Citation`
+
+The primary type representing a bibliographic entry:
+
+[source,rust]
+----
+pub struct Citation {
+    pub id: String,
+    pub title: String,
+    pub authors: Vec<String>,
+    pub year: Option<u16>,
+    pub venue: Option<String>,
+    // ... additional fields
+}
+----
+
+==== `Bibliography`
+
+A collection of citations with management capabilities:
+
+[source,rust]
+----
+pub struct Bibliography {
+    citations: Vec<Citation>,
+}
+----
+
+=== Error Handling
+
+The library uses `thiserror` for structured error handling:
+
+[source,rust]
+----
+#[derive(Error, Debug)]
+pub enum CitationError {
+    #[error("Invalid citation format: {0}")]
+    InvalidFormat(String),
+    #[error("Missing required field: {0}")]
+    MissingField(String),
+    #[error("Parsing error: {0}")]
+    ParseError(String),
+}
+----
+
+== Development
+
+=== Prerequisites
+
+* Rust 1.56 or later
+* Cargo (included with Rust)
+
+=== Building
+
+[source,bash]
+----
+# Build the workspace
+cargo build
+
+# Run tests
+cargo test
+
+# Check formatting and lints
+cargo fmt --check
+cargo clippy -- -D warnings
+----
+
+=== Running Examples
+
+[source,bash]
+----
+# Run the core library tests
+cargo test -p citation_station
+
+# Build documentation
+cargo doc --open
+----
+
+== Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. **Code Style**: Use `cargo fmt` to format code
+2. **Testing**: Add tests for new functionality
+3. **Documentation**: Update documentation for public APIs
+4. **Commits**: Use conventional commit messages
+
+=== Code Organization
+
+* Keep the core library focused on essential citation functionality
+* Use clear, descriptive names for types and functions
+* Prefer composition over inheritance
+* Write comprehensive tests for public APIs
+
+== License
+
+Licensed under either of
+
+* Apache License, Version 2.0 (link:LICENSE-APACHE[LICENSE-APACHE])
+* MIT license (link:LICENSE-MIT[LICENSE-MIT])
+
+at your option.
+
+=== Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+
+== Acknowledgments
+
+* The Rust community for excellent tooling and ecosystem
+* Academic citation standards organizations
+* Contributors and maintainers
+
+---
+
+Built with ❤️ and Rust 🦀

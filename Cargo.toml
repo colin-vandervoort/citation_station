@@ -1,0 +1,15 @@
+[workspace]
+members = ["citation_station"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Colin VanDervoort <colin.vandervoort.42@gmail.com>"]
+license = "MIT OR Apache-2.0"
+keywords = ["citation", "bibliography", "academic", "reference", "ieee"]
+categories = ["text-processing"]
+rust-version = "1.90"
+
+[workspace.dependencies]
+citation_station = { path = "citation_station" }

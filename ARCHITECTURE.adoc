@@ -1,0 +1,12 @@
+= Citation Station Architecture
+:toc:
+:toclevels: 2
+:sectnums:
+
+== Requirements
+
+* Expose a core crate with
+** structs for citation styles
+** serde logic for each format
+* Expose a CLI crate that consumes the core crate
+* (eventually) build a web-based version of the tool
