@@ -1,8 +1,12 @@
 {
     "cSpell.words": [
         "adoc",
+        "chrono",
         "clippy",
+        "Datelike",
         "Dervoort",
+        "ifdef",
+        "ifndef",
         "MSVC",
         "println",
         "rustc",

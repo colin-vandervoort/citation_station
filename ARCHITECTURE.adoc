@@ -1,12 +1,99 @@
+ifdef::env-github[]
+:MERMAID: source, mermaid
+endif::[]
+ifndef::env-github[]
+:MERMAID: mermaid
+endif::[]
+
 = Citation Station Architecture
 :toc:
 :toclevels: 2
 :sectnums:
+:source-highlighter: highlight.js
 
 == Requirements
 
-* Expose a core crate with
+* Expose a core crate with:
 ** structs for citation styles
 ** serde logic for each format
 * Expose a CLI crate that consumes the core crate
 * (eventually) build a web-based version of the tool
+
+== Data modeling
+
+[{MERMAID}]
+----
+classDiagram
+    class Citation {
+        Book
+        ConferencePaper
+        ConferenceProceedings
+        OnlineManual
+        PrintManual
+        OnlineVideo
+        OnlineStandard
+        OnlineThesis
+    }
+
+    class Bibliography {
+        +Array#lt;Citation#gt; citations
+    }
+
+    Bibliography --* Citation
+----
+
+'''
+
+[source,rust]
+----
+pub struct CommonCitationData {
+    pub id: String,
+    pub title: String,
+}
+
+pub struct PageRange {
+    pub start: u32,
+    pub end: u32,
+}
+
+pub struct LocationData {
+    pub city: String,
+    pub state: Option<String>,
+    pub country: String
+}
+
+struct Book {
+    common_data: CommonCitationData,
+    doi: Option<String>,
+    pages: Option<PageRange>,
+}
+
+struct ConferencePaperOnline {
+    common_data: CommonCitationData,
+    conference_name: String,
+    conference_date: chrono::DateTime<chrono::Utc>,
+}
+
+struct ConferenceProceedingsOnline {
+    common_data: CommonCitationData,
+    conference_name: String,
+    conference_date: chrono::DateTime<chrono::Utc>,
+}
+
+struct OnlineManual {
+    common_data: CommonCitationData,
+}
+
+pub enum Citation {
+    Book,
+    ConferencePaperOnline
+    ConferenceProceedingsOnline,
+    OnlineManual,
+}
+
+impl Citation {
+    pub fn format_ieee(&self) -> String {
+        todo!();
+    }
+}
+----

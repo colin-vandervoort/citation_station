@@ -1,104 +1,54 @@
+mod api;
+
+use api::{date::PublishDate, errors::CitationError, media::Citation};
+
+use chrono::Month;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use thiserror::Error;
-
-/// Errors that can occur during citation processing
-#[derive(Error, Debug)]
-pub enum CitationError {
-    #[error("Invalid citation format: {0}")]
-    InvalidFormat(String),
-    #[error("Missing required field: {0}")]
-    MissingField(String),
-    #[error("Parsing error: {0}")]
-    ParseError(String),
-}
-
-/// A bibliographic entry representing a citable work
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Citation {
-    /// Unique identifier for the citation
-    pub id: String,
-    /// Title of the work
-    pub title: String,
-    /// List of authors
-    pub authors: Vec<String>,
-    /// Publication year
-    pub year: Option<u16>,
-    /// Journal or venue name
-    pub venue: Option<String>,
-    /// Volume number
-    pub volume: Option<String>,
-    /// Issue or number
-    pub number: Option<String>,
-    /// Page range
-    pub pages: Option<String>,
-    /// DOI (Digital Object Identifier)
-    pub doi: Option<String>,
-    /// URL
-    pub url: Option<String>,
-}
 
 impl Citation {
-    /// Create a new citation with required fields
-    pub fn new(id: String, title: String, authors: Vec<String>) -> Self {
-        Self {
-            id,
-            title,
-            authors,
-            year: None,
-            venue: None,
-            volume: None,
-            number: None,
-            pages: None,
-            doi: None,
-            url: None,
-        }
-    }
-
     /// Format the citation in APA style
     pub fn format_apa(&self) -> String {
         let mut parts = Vec::new();
 
-        // Authors
-        if !self.authors.is_empty() {
-            let authors = if self.authors.len() == 1 {
-                self.authors[0].clone()
-            } else if self.authors.len() == 2 {
-                format!("{} & {}", self.authors[0], self.authors[1])
-            } else {
-                format!("{}, et al.", self.authors[0])
-            };
-            parts.push(authors);
-        }
+        match self {
+            Citation::Book(book) => {
+                // Authors
+                if !book.common_data.authors.is_empty() {
+                    let authors = if book.common_data.authors.len() == 1 {
+                        let first_author = book.common_data.authors[0].clone();
+                        first_author.as_apa_string()
+                    } else if book.common_data.authors.len() == 2 {
+                        format!(
+                            "{} & {}",
+                            book.common_data.authors[0].as_apa_string(),
+                            book.common_data.authors[1].as_apa_string()
+                        )
+                    } else {
+                        todo!();
+                    };
+                    parts.push(authors);
+                }
 
-        // Year
-        if let Some(year) = self.year {
-            parts.push(format!("({})", year));
-        }
+                // Year
+                if let Some(datetime_published) = &book.common_data.published {
+                    parts.push(format!("({})", datetime_published.year()));
+                }
 
-        // Title
-        parts.push(format!("{}.", self.title));
-
-        // Venue
-        if let Some(venue) = &self.venue {
-            parts.push(format!("*{}*", venue));
+                // Title
+                parts.push(format!("{}.", book.common_data.title));
+            }
+            Citation::ConferencePaperOnline(_paper) => todo!(),
+            Citation::ConferenceProceedingsOnline(_proceedings) => todo!(),
+            Citation::OnlineManual(_online_manual) => todo!(),
+            Citation::OnlineVideo(_online_video) => todo!(),
         }
 
         parts.join(" ")
     }
 
-    /// Validate that the citation has all required fields
-    pub fn validate(&self) -> Result<(), CitationError> {
-        if self.id.is_empty() {
-            return Err(CitationError::MissingField("id".to_string()));
-        }
-        if self.title.is_empty() {
-            return Err(CitationError::MissingField("title".to_string()));
-        }
-        if self.authors.is_empty() {
-            return Err(CitationError::MissingField("authors".to_string()));
-        }
-        Ok(())
+    pub fn format_ieee(&self) -> String {
+        todo!();
     }
 }
 
@@ -124,13 +74,11 @@ impl Bibliography {
 
     /// Add a citation to the bibliography
     pub fn add_citation(&mut self, citation: Citation) -> Result<(), CitationError> {
-        citation.validate()?;
-
         // Check for duplicate IDs
-        if self.citations.iter().any(|c| c.id == citation.id) {
+        if self.citations.iter().any(|c| c.id() == citation.id()) {
             return Err(CitationError::InvalidFormat(format!(
                 "Citation with ID '{}' already exists",
-                citation.id
+                citation.id()
             )));
         }
 
@@ -140,7 +88,7 @@ impl Bibliography {
 
     /// Get a citation by ID
     pub fn get_citation(&self, id: &str) -> Option<&Citation> {
-        self.citations.iter().find(|c| c.id == id)
+        self.citations.iter().find(|c| c.id() == id)
     }
 
     /// Get all citations
@@ -148,19 +96,25 @@ impl Bibliography {
         &self.citations
     }
 
-    /// Sort citations by author's last name
-    pub fn sort_by_author(&mut self) {
-        self.citations.sort_by(|a, b| {
-            let a_author = a.authors.first().unwrap_or(&String::new()).clone();
-            let b_author = b.authors.first().unwrap_or(&String::new()).clone();
-            a_author.cmp(&b_author)
-        });
-    }
+    // pub fn sort_by_author(&mut self) {
+    //     self.citations.sort_by(|a, b| {
+    //         match(a.authors().first(), b.authors().first()) {
+    //             (None, None) => Ordering::Equal,
+    //             (None, Some(_)) => Ordering::Less,
+    //             (Some(_), None) => Ordering::Greater,
+    //             (Some(author_a), Some(author_b)) => author_a.cmp(author_b)
+    //         }
+    //     });
+    // }
 
     /// Sort citations by year (descending)
-    pub fn sort_by_year(&mut self) {
-        self.citations
-            .sort_by(|a, b| b.year.unwrap_or(0).cmp(&a.year.unwrap_or(0)));
+    pub fn sort_by_publish_date(&mut self) {
+        const DEFAULT_PUBLISH_DATE: PublishDate = PublishDate::from_year_month(0, Month::January);
+        self.citations.sort_by(|a, b| {
+            b.published()
+                .unwrap_or(DEFAULT_PUBLISH_DATE)
+                .cmp(&a.published().unwrap_or(DEFAULT_PUBLISH_DATE))
+        });
     }
 }
 
@@ -172,72 +126,72 @@ impl Default for Bibliography {
 
 #[cfg(test)]
 mod tests {
+
+    use crate::api::{
+        author::AuthorName,
+        media::{Book, CommonCitationData},
+    };
+
     use super::*;
 
     #[test]
     fn test_citation_creation() {
-        let citation = Citation::new(
-            "cv_algo_practice".to_string(),
-            "algo_practice".to_string(),
-            vec!["Colin VanDervoort".to_string()],
-        );
+        let citation = Citation::Book(Book {
+            common_data: CommonCitationData {
+                id: "cv_algo_practice".to_string(),
+                title: "algo_practice".to_string(),
+                authors: vec![
+                    AuthorName::from_first_middle_last("Colin", "James", "VanDervoort").unwrap(),
+                ],
+                published: Option::None,
+            },
+            doi: Option::None,
+            pages: Option::None,
+        });
 
-        assert_eq!(citation.id, "cv_algo_practice");
-        assert_eq!(citation.title, "algo_practice");
-        assert_eq!(citation.authors, vec!["Colin VanDervoort"]);
-    }
-
-    #[test]
-    fn test_citation_validation() {
-        let valid_citation = Citation::new(
-            "test".to_string(),
-            "Test Title".to_string(),
-            vec!["Test Author".to_string()],
-        );
-
-        assert!(valid_citation.validate().is_ok());
-
-        let invalid_citation = Citation::new(
-            "".to_string(),
-            "Test Title".to_string(),
-            vec!["Test Author".to_string()],
-        );
-
-        assert!(invalid_citation.validate().is_err());
+        assert_eq!(citation.id(), "cv_algo_practice");
+        assert_eq!(citation.title(), "algo_practice");
     }
 
     #[test]
     fn test_apa_formatting() {
-        let mut citation = Citation::new(
-            "test".to_string(),
-            "A Great Paper".to_string(),
-            vec!["Smith, J.".to_string()],
-        );
-        citation.year = Some(2023);
-        citation.venue = Some("Journal of Testing".to_string());
+        let citation = Citation::Book(Book {
+            common_data: CommonCitationData {
+                id: "test".to_string(),
+                title: "A Great Paper".to_string(),
+                authors: vec![AuthorName::from_first_last("J", "Smith").unwrap()],
+                published: Some(PublishDate::from_year(2023)),
+            },
+            doi: Option::None,
+            pages: Option::None,
+        });
 
         let formatted = citation.format_apa();
         assert!(formatted.contains("Smith, J."));
         assert!(formatted.contains("(2023)"));
         assert!(formatted.contains("A Great Paper"));
-        assert!(formatted.contains("*Journal of Testing*"));
     }
 
     #[test]
     fn test_bibliography() {
         let mut bib = Bibliography::new();
 
-        let citation = Citation::new(
-            "test".to_string(),
-            "Test Title".to_string(),
-            vec!["Test Author".to_string()],
-        );
+        let citation = Citation::Book(Book {
+            common_data: CommonCitationData {
+                id: "test".to_string(),
+                title: "Test Title".to_string(),
+                authors: vec![AuthorName::from_first_last("Test", "Author").unwrap()],
+                published: None,
+            },
+            doi: Option::None,
+            pages: Option::None,
+        });
 
         assert!(bib.add_citation(citation).is_ok());
         assert_eq!(bib.citations().len(), 1);
 
         let found = bib.get_citation("test");
         assert!(found.is_some());
-        assert_eq!(found.unwrap().title, "Test Title");
+        assert_eq!(found.unwrap().title(), "Test Title");
     }
 }
