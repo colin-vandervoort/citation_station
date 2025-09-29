@@ -20,11 +20,15 @@ pub enum AuthorName {
         surname: String,
         first_name: String,
         middle_name: String,
-    }
+    },
 }
 
 impl AuthorName {
-    pub fn from_first_middle_last(first: &str, middle: &str, last: &str) -> Result<AuthorName, NameError> {
+    pub fn from_first_middle_last(
+        first: &str,
+        middle: &str,
+        last: &str,
+    ) -> Result<AuthorName, NameError> {
         if first.len() == 0 {
             return Err(NameError::EmptyString);
         }
@@ -66,7 +70,10 @@ impl AuthorName {
     pub fn as_ieee_string(&self) -> String {
         match self {
             AuthorName::SurnameOnly { surname } => surname.clone(),
-            AuthorName::SurnameAndFirstName { surname, first_name } => {
+            AuthorName::SurnameAndFirstName {
+                surname,
+                first_name,
+            } => {
                 let maybe_first_initial = first_grapheme_from_str(first_name);
                 if let Some(first_initial) = maybe_first_initial {
                     format!("{}. {}", first_initial, surname)
@@ -74,14 +81,20 @@ impl AuthorName {
                     surname.clone()
                 }
             }
-            AuthorName::SurnameAndFirstNameAndMiddleName { surname, first_name, middle_name } => {
+            AuthorName::SurnameAndFirstNameAndMiddleName {
+                surname,
+                first_name,
+                middle_name,
+            } => {
                 let maybe_first_initial = first_grapheme_from_str(first_name);
                 let maybe_middle_initial = first_grapheme_from_str(middle_name);
                 match (maybe_first_initial, maybe_middle_initial) {
                     (None, None) => surname.clone(),
                     (None, Some(_middle_initial)) => panic!(),
                     (Some(_first_initial), None) => panic!(),
-                    (Some(first_initial), Some(middle_initial)) => format!("{}. {}. {}", first_initial, middle_initial, surname)
+                    (Some(first_initial), Some(middle_initial)) => {
+                        format!("{}. {}. {}", first_initial, middle_initial, surname)
+                    }
                 }
             }
         }
@@ -90,7 +103,10 @@ impl AuthorName {
     pub fn as_apa_string(&self) -> String {
         match self {
             AuthorName::SurnameOnly { surname } => surname.clone(),
-            AuthorName::SurnameAndFirstName { surname, first_name } => {
+            AuthorName::SurnameAndFirstName {
+                surname,
+                first_name,
+            } => {
                 let maybe_first_initial = first_grapheme_from_str(first_name);
                 if let Some(first_initial) = maybe_first_initial {
                     format!("{}, {}.", surname, first_initial)
@@ -98,14 +114,20 @@ impl AuthorName {
                     surname.clone()
                 }
             }
-            AuthorName::SurnameAndFirstNameAndMiddleName { surname, first_name, middle_name } => {
+            AuthorName::SurnameAndFirstNameAndMiddleName {
+                surname,
+                first_name,
+                middle_name,
+            } => {
                 let maybe_first_initial = first_grapheme_from_str(first_name);
                 let maybe_middle_initial = first_grapheme_from_str(middle_name);
                 match (maybe_first_initial, maybe_middle_initial) {
                     (None, None) => surname.clone(),
                     (None, Some(_middle_initial)) => panic!(),
                     (Some(_first_initial), None) => panic!(),
-                    (Some(first_initial), Some(middle_initial)) => format!("{}, {}.{}.", surname, first_initial, middle_initial)
+                    (Some(first_initial), Some(middle_initial)) => {
+                        format!("{}, {}.{}.", surname, first_initial, middle_initial)
+                    }
                 }
             }
         }

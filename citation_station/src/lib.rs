@@ -1,4 +1,5 @@
-mod api;
+pub mod api;
+pub mod html;
 
 use api::{date::PublishDate, errors::CitationError, media::Citation};
 
