@@ -8,7 +8,7 @@ fn first_grapheme_from_str(s: &str) -> Option<&str> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum AuthorName {
+pub enum PersonName {
     SurnameOnly {
         surname: String,
     },
@@ -23,12 +23,12 @@ pub enum AuthorName {
     },
 }
 
-impl AuthorName {
+impl PersonName {
     pub fn from_first_middle_last(
         first: &str,
         middle: &str,
         last: &str,
-    ) -> Result<AuthorName, NameError> {
+    ) -> Result<PersonName, NameError> {
         if first.len() == 0 {
             return Err(NameError::EmptyString);
         }
@@ -38,39 +38,39 @@ impl AuthorName {
         if last.len() == 0 {
             return Err(NameError::EmptyString);
         }
-        Ok(AuthorName::SurnameAndFirstNameAndMiddleName {
+        Ok(PersonName::SurnameAndFirstNameAndMiddleName {
             first_name: first.to_string(),
             middle_name: middle.to_string(),
             surname: last.to_string(),
         })
     }
 
-    pub fn from_first_last(first: &str, last: &str) -> Result<AuthorName, NameError> {
+    pub fn from_first_last(first: &str, last: &str) -> Result<PersonName, NameError> {
         if first.len() == 0 {
             return Err(NameError::EmptyString);
         }
         if last.len() == 0 {
             return Err(NameError::EmptyString);
         }
-        Ok(AuthorName::SurnameAndFirstName {
+        Ok(PersonName::SurnameAndFirstName {
             first_name: first.to_string(),
             surname: last.to_string(),
         })
     }
 
-    pub fn from_last(last: &str) -> Result<AuthorName, NameError> {
+    pub fn from_last(last: &str) -> Result<PersonName, NameError> {
         if last.len() == 0 {
             return Err(NameError::EmptyString);
         }
-        Ok(AuthorName::SurnameOnly {
+        Ok(PersonName::SurnameOnly {
             surname: last.to_string(),
         })
     }
 
     pub fn as_ieee_string(&self) -> String {
         match self {
-            AuthorName::SurnameOnly { surname } => surname.clone(),
-            AuthorName::SurnameAndFirstName {
+            PersonName::SurnameOnly { surname } => surname.clone(),
+            PersonName::SurnameAndFirstName {
                 surname,
                 first_name,
             } => {
@@ -81,7 +81,7 @@ impl AuthorName {
                     surname.clone()
                 }
             }
-            AuthorName::SurnameAndFirstNameAndMiddleName {
+            PersonName::SurnameAndFirstNameAndMiddleName {
                 surname,
                 first_name,
                 middle_name,
@@ -102,8 +102,8 @@ impl AuthorName {
 
     pub fn as_apa_string(&self) -> String {
         match self {
-            AuthorName::SurnameOnly { surname } => surname.clone(),
-            AuthorName::SurnameAndFirstName {
+            PersonName::SurnameOnly { surname } => surname.clone(),
+            PersonName::SurnameAndFirstName {
                 surname,
                 first_name,
             } => {
@@ -114,7 +114,7 @@ impl AuthorName {
                     surname.clone()
                 }
             }
-            AuthorName::SurnameAndFirstNameAndMiddleName {
+            PersonName::SurnameAndFirstNameAndMiddleName {
                 surname,
                 first_name,
                 middle_name,
@@ -126,10 +126,111 @@ impl AuthorName {
                     (None, Some(_middle_initial)) => panic!(),
                     (Some(_first_initial), None) => panic!(),
                     (Some(first_initial), Some(middle_initial)) => {
-                        format!("{}, {}.{}.", surname, first_initial, middle_initial)
+                        format!("{}, {}. {}.", surname, first_initial, middle_initial)
                     }
                 }
             }
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum Author {
+    Person { name: PersonName },
+    Organization { name: String },
+}
+
+impl Author {
+    pub fn as_ieee_string(&self) -> String {
+        match self {
+            Author::Person { name } => name.as_ieee_string(),
+            Author::Organization { name } => name.clone(),
+        }
+    }
+
+    pub fn as_apa_string(&self) -> String {
+        match self {
+            Author::Person { name } => name.as_apa_string(),
+            Author::Organization { name } => name.clone(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::api::author::{Author, PersonName};
+
+    #[test]
+    fn test_format_person_author_ieee_last_name_only() {
+        let author = Author::Person {
+            name: PersonName::from_last("Doe").unwrap(),
+        };
+
+        assert_eq!(author.as_ieee_string(), "Doe")
+    }
+
+    #[test]
+    fn test_format_person_author_ieee_first_last() {
+        let author = Author::Person {
+            name: PersonName::from_first_last("Jane", "Doe").unwrap(),
+        };
+
+        assert_eq!(author.as_ieee_string(), "J. Doe")
+    }
+
+    #[test]
+    fn test_format_person_author_ieee_first_middle_last() {
+        let author = Author::Person {
+            name: PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap(),
+        };
+
+        assert_eq!(author.as_ieee_string(), "J. D. Doe")
+    }
+
+    #[test]
+    fn test_format_org_author_ieee() {
+        let org_name = "The Corporation";
+        let author = Author::Organization {
+            name: org_name.to_string(),
+        };
+
+        assert_eq!(author.as_ieee_string(), org_name)
+    }
+
+    #[test]
+    fn test_format_person_author_apa_last_name_only() {
+        let author = Author::Person {
+            name: PersonName::from_last("Doe").unwrap(),
+        };
+
+        assert_eq!(author.as_apa_string(), "Doe")
+    }
+
+    #[test]
+    fn test_format_person_author_apa_first_last() {
+        let author = Author::Person {
+            name: PersonName::from_first_last("Jane", "Doe").unwrap(),
+        };
+
+        assert_eq!(author.as_apa_string(), "Doe, J.")
+    }
+
+    #[test]
+    fn test_format_person_author_apa_first_middle_last() {
+        let author = Author::Person {
+            name: PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap(),
+        };
+
+        assert_eq!(author.as_apa_string(), "Doe, J. D.")
+    }
+
+    #[test]
+    fn test_format_org_author_apa() {
+        let org_name = "The Corporation";
+        let author = Author::Organization {
+            name: org_name.to_string(),
+        };
+
+        assert_eq!(author.as_apa_string(), org_name)
     }
 }

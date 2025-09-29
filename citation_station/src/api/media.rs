@@ -1,7 +1,7 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::api::{author::AuthorName, date::PublishDate};
+use crate::api::{author::Author, date::PublishDate};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CommonCitationData {
@@ -10,7 +10,7 @@ pub struct CommonCitationData {
     /// Title of the work
     pub title: String,
     /// List of authors
-    pub authors: Vec<AuthorName>,
+    pub authors: Vec<Author>,
     /// Date published
     pub published: Option<PublishDate>,
 }
@@ -118,7 +118,7 @@ impl Citation {
         }
     }
 
-    pub fn authors(&self) -> Vec<AuthorName> {
+    pub fn authors(&self) -> Vec<Author> {
         match self {
             Citation::Book(book) => book.common_data.authors.clone(),
             Citation::ConferencePaperOnline(conference_paper_online) => {

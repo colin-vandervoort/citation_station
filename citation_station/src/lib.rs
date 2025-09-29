@@ -129,7 +129,7 @@ impl Default for Bibliography {
 mod tests {
 
     use crate::api::{
-        author::AuthorName,
+        author::{Author, PersonName},
         media::{Book, CommonCitationData},
     };
 
@@ -141,9 +141,10 @@ mod tests {
             common_data: CommonCitationData {
                 id: "cv_algo_practice".to_string(),
                 title: "algo_practice".to_string(),
-                authors: vec![
-                    AuthorName::from_first_middle_last("Colin", "James", "VanDervoort").unwrap(),
-                ],
+                authors: vec![Author::Person {
+                    name: PersonName::from_first_middle_last("Colin", "James", "VanDervoort")
+                        .unwrap(),
+                }],
                 published: Option::None,
             },
             doi: Option::None,
@@ -160,7 +161,9 @@ mod tests {
             common_data: CommonCitationData {
                 id: "test".to_string(),
                 title: "A Great Paper".to_string(),
-                authors: vec![AuthorName::from_first_last("J", "Smith").unwrap()],
+                authors: vec![Author::Person {
+                    name: PersonName::from_first_last("J", "Smith").unwrap(),
+                }],
                 published: Some(PublishDate::from_year(2023)),
             },
             doi: Option::None,
@@ -181,7 +184,9 @@ mod tests {
             common_data: CommonCitationData {
                 id: "test".to_string(),
                 title: "Test Title".to_string(),
-                authors: vec![AuthorName::from_first_last("Test", "Author").unwrap()],
+                authors: vec![Author::Person {
+                    name: PersonName::from_first_last("Test", "Author").unwrap(),
+                }],
                 published: None,
             },
             doi: Option::None,
