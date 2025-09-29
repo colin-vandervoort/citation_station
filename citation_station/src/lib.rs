@@ -1,7 +1,7 @@
 pub mod api;
 pub mod html;
 
-use api::{date::PublishDate, errors::CitationError, media::Citation};
+use api::{citation::Citation, date::PublishDate, errors::CitationError};
 
 use chrono::Month;
 use serde::{Deserialize, Serialize};
@@ -130,7 +130,7 @@ mod tests {
 
     use crate::api::{
         author::{Author, PersonName},
-        media::{Book, CommonCitationData},
+        media::{book::Book, common::CommonCitationData},
     };
 
     use super::*;

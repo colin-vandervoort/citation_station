@@ -1,25 +1,15 @@
-use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::api::{author::Author, date::PublishDate};
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct CommonCitationData {
-    /// Unique identifier for the citation
-    pub id: String,
-    /// Title of the work
-    pub title: String,
-    /// List of authors
-    pub authors: Vec<Author>,
-    /// Date published
-    pub published: Option<PublishDate>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct PageRange {
-    pub start: u32,
-    pub end: u32,
-}
+use crate::api::{
+    author::Author,
+    date::PublishDate,
+    media::{
+        book::Book,
+        conference_paper::{ConferencePaperOnline, ConferenceProceedingsOnline},
+        online_manual::OnlineManual,
+        online_video::OnlineVideo,
+    },
+};
 
 // #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 // pub struct LocationData {
@@ -27,57 +17,6 @@ pub struct PageRange {
 //     pub state: Option<String>,
 //     pub country: String,
 // }
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Book {
-    pub common_data: CommonCitationData,
-    /// DOI (Digital Object Identifier)
-    pub doi: Option<String>,
-    /// Page range
-    pub pages: Option<PageRange>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ConferencePaperOnline {
-    pub common_data: CommonCitationData,
-    /// Journal or venue name
-    pub venue: Option<String>,
-    /// Volume number
-    pub volume: Option<String>,
-    /// Issue or number
-    pub number: Option<String>,
-    pub conference_name: String,
-    pub conference_date: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct ConferenceProceedingsOnline {
-    pub common_data: CommonCitationData,
-    /// Journal or venue name
-    pub venue: Option<String>,
-    /// Volume number
-    pub volume: Option<String>,
-    /// Issue or number
-    pub number: Option<String>,
-    pub conference_name: String,
-    pub conference_date: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct OnlineManual {
-    pub common_data: CommonCitationData,
-    /// URL
-    pub url: Option<String>,
-    pub accessed: NaiveDate,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct OnlineVideo {
-    pub common_data: CommonCitationData,
-    /// URL
-    pub url: Option<String>,
-    pub accessed: NaiveDate,
-}
 
 /// A bibliographic entry representing a citable work
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
