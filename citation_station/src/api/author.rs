@@ -3,6 +3,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::api::errors::NameError;
 
+const IEEE_ET_AL_CUTOFF: usize = 6;
+
 fn first_grapheme_from_str(s: &str) -> Option<&str> {
     UnicodeSegmentation::graphemes(s, true).take(1).next()
 }
@@ -136,23 +138,74 @@ impl PersonName {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Author {
-    Person { name: PersonName },
+    Persons { persons: Vec<PersonName> },
     Organization { name: String },
 }
 
 impl Author {
-    pub fn as_ieee_string(&self) -> String {
+    pub fn as_ieee_string(&self) -> Option<String> {
         match self {
-            Author::Person { name } => name.as_ieee_string(),
-            Author::Organization { name } => name.clone(),
+            Author::Persons { persons } => match persons.as_slice() {
+                [] => None,
+                [first] => Some(first.as_ieee_string()),
+                [first, second] => Some(format!(
+                    "{} and {}",
+                    first.as_ieee_string(),
+                    second.as_ieee_string()
+                )),
+                [all @ ..] => {
+                    if all.len() > IEEE_ET_AL_CUTOFF {
+                        Some(format!("{} et al.", all.first().unwrap().as_ieee_string()))
+                    } else {
+                        // let mut s = all.into_iter().map(|person| person.as_ieee_string()).collect().join(", ");
+                        let mut persons_iter = all.into_iter();
+                        let last_person = persons_iter.next_back().unwrap();
+                        let persons_except_last = persons_iter
+                            .map(|person| person.as_ieee_string())
+                            .collect::<Vec<String>>()
+                            .join(", ");
+
+                        Some(format!(
+                            "{} and {}",
+                            persons_except_last,
+                            last_person.as_ieee_string()
+                        ))
+                    }
+                }
+            },
+            Author::Organization { name } => Some(name.clone()),
         }
     }
 
-    pub fn as_apa_string(&self) -> String {
+    pub fn as_apa_string(&self) -> Option<String> {
         match self {
-            Author::Person { name } => name.as_apa_string(),
-            Author::Organization { name } => name.clone(),
+            Author::Persons { persons } => match persons.as_slice() {
+                [] => None,
+                [first] => Some(first.as_apa_string()),
+                [first, second] => Some(format!(
+                    "{} & {}",
+                    first.as_apa_string(),
+                    second.as_apa_string()
+                )),
+                [all @ ..] => Some(format!("{} et al.", all.first().unwrap().as_ieee_string())),
+            },
+            Author::Organization { name } => Some(name.clone()),
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Editors {
+    persons: Vec<PersonName>,
+}
+
+impl Editors {
+    pub fn as_ieee_string(&self) -> Option<String> {
+        todo!();
+    }
+
+    pub fn as_apa_string(&self) -> Option<String> {
+        todo!();
     }
 }
 
@@ -162,29 +215,29 @@ mod tests {
 
     #[test]
     fn test_format_person_author_ieee_last_name_only() {
-        let author = Author::Person {
-            name: PersonName::from_last("Doe").unwrap(),
+        let author = Author::Persons {
+            persons: vec![PersonName::from_last("Doe").unwrap()],
         };
 
-        assert_eq!(author.as_ieee_string(), "Doe")
+        assert_eq!(author.as_ieee_string(), Some("Doe".to_string()))
     }
 
     #[test]
     fn test_format_person_author_ieee_first_last() {
-        let author = Author::Person {
-            name: PersonName::from_first_last("Jane", "Doe").unwrap(),
+        let author = Author::Persons {
+            persons: vec![PersonName::from_first_last("Jane", "Doe").unwrap()],
         };
 
-        assert_eq!(author.as_ieee_string(), "J. Doe")
+        assert_eq!(author.as_ieee_string(), Some("J. Doe".to_string()))
     }
 
     #[test]
     fn test_format_person_author_ieee_first_middle_last() {
-        let author = Author::Person {
-            name: PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap(),
+        let author = Author::Persons {
+            persons: vec![PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap()],
         };
 
-        assert_eq!(author.as_ieee_string(), "J. D. Doe")
+        assert_eq!(author.as_ieee_string(), Some("J. D. Doe".to_string()))
     }
 
     #[test]
@@ -194,34 +247,34 @@ mod tests {
             name: org_name.to_string(),
         };
 
-        assert_eq!(author.as_ieee_string(), org_name)
+        assert_eq!(author.as_ieee_string(), Some(org_name.to_string()))
     }
 
     #[test]
     fn test_format_person_author_apa_last_name_only() {
-        let author = Author::Person {
-            name: PersonName::from_last("Doe").unwrap(),
+        let author = Author::Persons {
+            persons: vec![PersonName::from_last("Doe").unwrap()],
         };
 
-        assert_eq!(author.as_apa_string(), "Doe")
+        assert_eq!(author.as_apa_string(), Some("Doe".to_string()))
     }
 
     #[test]
     fn test_format_person_author_apa_first_last() {
-        let author = Author::Person {
-            name: PersonName::from_first_last("Jane", "Doe").unwrap(),
+        let author = Author::Persons {
+            persons: vec![PersonName::from_first_last("Jane", "Doe").unwrap()],
         };
 
-        assert_eq!(author.as_apa_string(), "Doe, J.")
+        assert_eq!(author.as_apa_string(), Some("Doe, J.".to_string()))
     }
 
     #[test]
     fn test_format_person_author_apa_first_middle_last() {
-        let author = Author::Person {
-            name: PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap(),
+        let author = Author::Persons {
+            persons: vec![PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap()],
         };
 
-        assert_eq!(author.as_apa_string(), "Doe, J. D.")
+        assert_eq!(author.as_apa_string(), Some("Doe, J. D.".to_string()))
     }
 
     #[test]
@@ -231,6 +284,6 @@ mod tests {
             name: org_name.to_string(),
         };
 
-        assert_eq!(author.as_apa_string(), org_name)
+        assert_eq!(author.as_apa_string(), Some(org_name.to_string()))
     }
 }

@@ -57,17 +57,17 @@ impl Citation {
         }
     }
 
-    pub fn authors(&self) -> Vec<Author> {
+    pub fn author(&self) -> Author {
         match self {
-            Citation::Book(book) => book.common_data.authors.clone(),
+            Citation::Book(book) => book.common_data.author.clone(),
             Citation::ConferencePaperOnline(conference_paper_online) => {
-                conference_paper_online.common_data.authors.clone()
+                conference_paper_online.common_data.author.clone()
             }
             Citation::ConferenceProceedingsOnline(conference_proceedings_online) => {
-                conference_proceedings_online.common_data.authors.clone()
+                conference_proceedings_online.common_data.author.clone()
             }
-            Citation::OnlineManual(online_manual) => online_manual.common_data.authors.clone(),
-            Citation::OnlineVideo(online_video) => online_video.common_data.authors.clone(),
+            Citation::OnlineManual(online_manual) => online_manual.common_data.author.clone(),
+            Citation::OnlineVideo(online_video) => online_video.common_data.author.clone(),
         }
     }
 

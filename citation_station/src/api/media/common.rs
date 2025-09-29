@@ -8,8 +8,8 @@ pub struct CommonCitationData {
     pub id: String,
     /// Title of the work
     pub title: String,
-    /// List of authors
-    pub authors: Vec<Author>,
+    /// Source author
+    pub author: Author,
     /// Date published
     pub published: Option<PublishDate>,
 }

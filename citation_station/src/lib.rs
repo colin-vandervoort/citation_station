@@ -15,20 +15,8 @@ impl Citation {
         match self {
             Citation::Book(book) => {
                 // Authors
-                if !book.common_data.authors.is_empty() {
-                    let authors = if book.common_data.authors.len() == 1 {
-                        let first_author = book.common_data.authors[0].clone();
-                        first_author.as_apa_string()
-                    } else if book.common_data.authors.len() == 2 {
-                        format!(
-                            "{} & {}",
-                            book.common_data.authors[0].as_apa_string(),
-                            book.common_data.authors[1].as_apa_string()
-                        )
-                    } else {
-                        todo!();
-                    };
-                    parts.push(authors);
+                if let Some(apa_authors) = book.common_data.author.as_apa_string() {
+                    parts.push(apa_authors);
                 }
 
                 // Year
@@ -141,10 +129,12 @@ mod tests {
             common_data: CommonCitationData {
                 id: "cv_algo_practice".to_string(),
                 title: "algo_practice".to_string(),
-                authors: vec![Author::Person {
-                    name: PersonName::from_first_middle_last("Colin", "James", "VanDervoort")
-                        .unwrap(),
-                }],
+                author: Author::Persons {
+                    persons: vec![
+                        PersonName::from_first_middle_last("Colin", "James", "VanDervoort")
+                            .unwrap(),
+                    ],
+                },
                 published: Option::None,
             },
             doi: Option::None,
@@ -161,9 +151,9 @@ mod tests {
             common_data: CommonCitationData {
                 id: "test".to_string(),
                 title: "A Great Paper".to_string(),
-                authors: vec![Author::Person {
-                    name: PersonName::from_first_last("J", "Smith").unwrap(),
-                }],
+                author: Author::Persons {
+                    persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
+                },
                 published: Some(PublishDate::from_year(2023)),
             },
             doi: Option::None,
@@ -184,9 +174,9 @@ mod tests {
             common_data: CommonCitationData {
                 id: "test".to_string(),
                 title: "Test Title".to_string(),
-                authors: vec![Author::Person {
-                    name: PersonName::from_first_last("Test", "Author").unwrap(),
-                }],
+                author: Author::Persons {
+                    persons: vec![PersonName::from_first_last("Test", "Author").unwrap()],
+                },
                 published: None,
             },
             doi: Option::None,
