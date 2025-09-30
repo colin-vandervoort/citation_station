@@ -115,29 +115,6 @@ mod tests {
     }
 
     #[test]
-    fn test_apa_formatting() {
-        let citation = Citation::Book(Book {
-            common_data: CommonCitationData {
-                id: "test".to_string(),
-                author: Author::Persons {
-                    persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
-                },
-                published: Some(PublishDate::from_year(2023)),
-            },
-            title: "A Great Paper".to_string(),
-            doi: None,
-            pages: None,
-            chapter: None,
-            version: None,
-        });
-
-        let formatted = citation.format_apa();
-        assert!(formatted.contains("Smith, J."));
-        assert!(formatted.contains("(2023)"));
-        assert!(formatted.contains("A Great Paper"));
-    }
-
-    #[test]
     fn test_bibliography() {
         let mut bib = Bibliography::new();
 

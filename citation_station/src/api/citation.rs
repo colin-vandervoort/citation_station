@@ -98,7 +98,7 @@ impl Citation {
 
                 // Year
                 if let Some(datetime_published) = &book.common_data.published {
-                    parts.push(format!("({})", datetime_published.year()));
+                    parts.push(format!("({}).", datetime_published.year()));
                 }
 
                 // Title
@@ -114,6 +114,29 @@ impl Citation {
     }
 
     pub fn format_ieee(&self) -> String {
-        todo!();
+        match self {
+            Citation::Book(book) => {
+                let mut parts = Vec::new();
+
+                // Authors
+                if let Some(ieee_authors) = book.common_data.author.as_ieee_string() {
+                    parts.push(ieee_authors);
+                }
+
+                // Title
+                parts.push(book.title_as_ieee_string());
+
+                // Year
+                if let Some(datetime_published) = &book.common_data.published {
+                    parts.push(format!("({}).", datetime_published.year()));
+                }
+
+                parts.join(" ")
+            }
+            Citation::ConferencePaperOnline(_paper) => todo!(),
+            Citation::ConferenceProceedingsOnline(_proceedings) => todo!(),
+            Citation::OnlineManual(_online_manual) => todo!(),
+            Citation::OnlineVideo(_online_video) => todo!(),
+        }
     }
 }
