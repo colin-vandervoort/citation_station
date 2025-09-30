@@ -187,7 +187,7 @@ impl Author {
                     first.as_apa_string(),
                     second.as_apa_string()
                 )),
-                [all @ ..] => Some(format!("{} et al.", all.first().unwrap().as_ieee_string())),
+                [all @ ..] => Some(format!("{} et al.", all.first().unwrap().as_apa_string())),
             },
             Author::Organization { name } => Some(name.clone()),
         }
