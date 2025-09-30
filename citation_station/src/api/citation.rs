@@ -45,15 +45,15 @@ impl Citation {
 
     pub fn title(&self) -> String {
         match self {
-            Citation::Book(book) => book.common_data.title.clone(),
+            Citation::Book(book) => book.title.clone(),
             Citation::ConferencePaperOnline(conference_paper_online) => {
-                conference_paper_online.common_data.title.clone()
+                conference_paper_online.title.clone()
             }
             Citation::ConferenceProceedingsOnline(conference_proceedings_online) => {
-                conference_proceedings_online.common_data.title.clone()
+                conference_proceedings_online.title.clone()
             }
-            Citation::OnlineManual(online_manual) => online_manual.common_data.title.clone(),
-            Citation::OnlineVideo(online_video) => online_video.common_data.title.clone(),
+            Citation::OnlineManual(online_manual) => online_manual.title.clone(),
+            Citation::OnlineVideo(online_video) => online_video.title.clone(),
         }
     }
 
@@ -83,5 +83,37 @@ impl Citation {
             Citation::OnlineManual(online_manual) => online_manual.common_data.published.clone(),
             Citation::OnlineVideo(online_video) => online_video.common_data.published.clone(),
         }
+    }
+
+    /// Format the citation in APA style
+    pub fn format_apa(&self) -> String {
+        let mut parts = Vec::new();
+
+        match self {
+            Citation::Book(book) => {
+                // Authors
+                if let Some(apa_authors) = book.common_data.author.as_apa_string() {
+                    parts.push(apa_authors);
+                }
+
+                // Year
+                if let Some(datetime_published) = &book.common_data.published {
+                    parts.push(format!("({})", datetime_published.year()));
+                }
+
+                // Title
+                parts.push(book.title_as_apa_string());
+            }
+            Citation::ConferencePaperOnline(_paper) => todo!(),
+            Citation::ConferenceProceedingsOnline(_proceedings) => todo!(),
+            Citation::OnlineManual(_online_manual) => todo!(),
+            Citation::OnlineVideo(_online_video) => todo!(),
+        }
+
+        parts.join(" ")
+    }
+
+    pub fn format_ieee(&self) -> String {
+        todo!();
     }
 }

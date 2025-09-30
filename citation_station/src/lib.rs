@@ -1,45 +1,12 @@
 pub mod api;
 pub mod html;
+mod unicode;
 
 use api::{citation::Citation, date::PublishDate, errors::CitationError};
 
 use chrono::Month;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-
-impl Citation {
-    /// Format the citation in APA style
-    pub fn format_apa(&self) -> String {
-        let mut parts = Vec::new();
-
-        match self {
-            Citation::Book(book) => {
-                // Authors
-                if let Some(apa_authors) = book.common_data.author.as_apa_string() {
-                    parts.push(apa_authors);
-                }
-
-                // Year
-                if let Some(datetime_published) = &book.common_data.published {
-                    parts.push(format!("({})", datetime_published.year()));
-                }
-
-                // Title
-                parts.push(format!("{}.", book.common_data.title));
-            }
-            Citation::ConferencePaperOnline(_paper) => todo!(),
-            Citation::ConferenceProceedingsOnline(_proceedings) => todo!(),
-            Citation::OnlineManual(_online_manual) => todo!(),
-            Citation::OnlineVideo(_online_video) => todo!(),
-        }
-
-        parts.join(" ")
-    }
-
-    pub fn format_ieee(&self) -> String {
-        todo!();
-    }
-}
 
 impl fmt::Display for Citation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -128,17 +95,19 @@ mod tests {
         let citation = Citation::Book(Book {
             common_data: CommonCitationData {
                 id: "cv_algo_practice".to_string(),
-                title: "algo_practice".to_string(),
                 author: Author::Persons {
                     persons: vec![
                         PersonName::from_first_middle_last("Colin", "James", "VanDervoort")
                             .unwrap(),
                     ],
                 },
-                published: Option::None,
+                published: None,
             },
-            doi: Option::None,
-            pages: Option::None,
+            title: "algo_practice".to_string(),
+            doi: None,
+            pages: None,
+            chapter: None,
+            version: None,
         });
 
         assert_eq!(citation.id(), "cv_algo_practice");
@@ -150,14 +119,16 @@ mod tests {
         let citation = Citation::Book(Book {
             common_data: CommonCitationData {
                 id: "test".to_string(),
-                title: "A Great Paper".to_string(),
                 author: Author::Persons {
                     persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
                 },
                 published: Some(PublishDate::from_year(2023)),
             },
-            doi: Option::None,
-            pages: Option::None,
+            title: "A Great Paper".to_string(),
+            doi: None,
+            pages: None,
+            chapter: None,
+            version: None,
         });
 
         let formatted = citation.format_apa();
@@ -173,14 +144,16 @@ mod tests {
         let citation = Citation::Book(Book {
             common_data: CommonCitationData {
                 id: "test".to_string(),
-                title: "Test Title".to_string(),
                 author: Author::Persons {
                     persons: vec![PersonName::from_first_last("Test", "Author").unwrap()],
                 },
                 published: None,
             },
-            doi: Option::None,
-            pages: Option::None,
+            title: "Test Title".to_string(),
+            doi: None,
+            pages: None,
+            chapter: None,
+            version: None,
         });
 
         assert!(bib.add_citation(citation).is_ok());

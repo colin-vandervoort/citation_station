@@ -7,6 +7,7 @@ use crate::api::media::common::CommonCitationData;
 
 pub struct ConferencePaperOnline {
     pub common_data: CommonCitationData,
+    pub title: String,
     /// Journal or venue name
     pub venue: Option<String>,
     /// Volume number
@@ -20,6 +21,7 @@ pub struct ConferencePaperOnline {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ConferenceProceedingsOnline {
     pub common_data: CommonCitationData,
+    pub title: String,
     /// Journal or venue name
     pub venue: Option<String>,
     /// Volume number

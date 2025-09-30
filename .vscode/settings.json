@@ -5,6 +5,7 @@
         "clippy",
         "Datelike",
         "Dervoort",
+        "EMDASH",
         "ifdef",
         "ifndef",
         "MSVC",
