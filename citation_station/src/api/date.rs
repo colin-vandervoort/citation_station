@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Get the abbreviated name of the month (e.g. "Jan."")
-pub fn ieee_abbreviated_month_name(month: &Month) -> &'static str {
+pub const fn ieee_abbreviated_month_name(month: &Month) -> &'static str {
     match month {
         Month::January => "Jan.",
         Month::February => "Feb.",
@@ -86,15 +86,15 @@ impl PublishDate {
         }
     }
 
-    pub fn year(&self) -> i32 {
+    pub const fn year(&self) -> i32 {
         self.year
     }
 
-    pub fn month(&self) -> Option<Month> {
+    pub const fn month(&self) -> Option<Month> {
         self.month
     }
 
-    pub fn day(&self) -> Option<u32> {
+    pub const fn day(&self) -> Option<u32> {
         self.day
     }
 }
