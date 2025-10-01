@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     api::{
         author::GenericAuthor,
-        media::{common::CommonCitationData, version::BookVersion},
+        media::{common::CommonCitationData, version::GenericMediaVersion},
         page_range::PageRange,
     },
     unicode::{LEFT_QUOTE, RIGHT_QUOTE},
@@ -19,7 +19,7 @@ pub struct Book {
     /// Chapter
     pub chapter: Option<String>,
     /// Edition
-    pub version: Option<BookVersion>,
+    pub version: Option<GenericMediaVersion>,
     /// DOI (Digital Object Identifier)
     pub doi: Option<String>,
     /// Page range
