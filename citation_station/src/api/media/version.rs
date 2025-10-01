@@ -17,9 +17,13 @@ impl GenericMediaVersion {
             GenericMediaVersion::DigitalEdition { number } => {
                 format!("{} digital ed.", number.to_ordinal_string())
             }
-            GenericMediaVersion::Edition { number } => format!("{} ed.", number.to_ordinal_string()),
+            GenericMediaVersion::Edition { number } => {
+                format!("{} ed.", number.to_ordinal_string())
+            }
             GenericMediaVersion::Volume { number } => format!("vol. {}", number),
-            GenericMediaVersion::VolumeRange { start, end } => format!("vols. {}{}{}", start, EMDASH, end),
+            GenericMediaVersion::VolumeRange { start, end } => {
+                format!("vols. {}{}{}", start, EMDASH, end)
+            }
         }
     }
 
@@ -28,7 +32,9 @@ impl GenericMediaVersion {
             GenericMediaVersion::DigitalEdition { number } => {
                 format!("({} digital ed.)", number.to_ordinal_string())
             }
-            GenericMediaVersion::Edition { number } => format!("({} ed.)", number.to_ordinal_string()),
+            GenericMediaVersion::Edition { number } => {
+                format!("({} ed.)", number.to_ordinal_string())
+            }
             GenericMediaVersion::Volume { number } => format!("(Vol. {})", number),
             GenericMediaVersion::VolumeRange { start, end } => {
                 format!("(Vols. {}{}{})", start, EMDASH, end)

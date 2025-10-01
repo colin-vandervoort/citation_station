@@ -25,6 +25,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 ** https://github.com/w3c/json-ld-api
 ** https://github.com/timothee-haudebourg/json-ld
 * Citation styles
-** https://apastyle.apa.org/style-grammar-guidelines/references/examples
-** https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf
-** https://libraryguides.vu.edu.au/ieeereferencing/webbaseddocument
+** APA
+*** https://guides.himmelfarb.gwu.edu/APA
+*** https://apastyle.apa.org/style-grammar-guidelines/references/examples
+** IEEE
+*** https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf
+*** https://libraryguides.vu.edu.au/ieeereferencing/webbaseddocument
+* AsciiDoc
+** https://gitlab.eclipse.org/eclipse/asciidoc-lang/asciidoc-tck
