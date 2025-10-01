@@ -84,7 +84,7 @@ impl Default for Bibliography {
 mod tests {
 
     use crate::api::{
-        author::{Author, PersonName},
+        author::{GenericAuthor, PersonName},
         media::{book::Book, common::CommonCitationData},
     };
 
@@ -95,13 +95,12 @@ mod tests {
         let citation = Citation::Book(Book {
             common_data: CommonCitationData {
                 id: "cv_algo_practice".to_string(),
-                author: Author::Persons {
-                    persons: vec![
-                        PersonName::from_first_middle_last("Colin", "James", "VanDervoort")
-                            .unwrap(),
-                    ],
-                },
                 published: None,
+            },
+            author: GenericAuthor::Persons {
+                persons: vec![
+                    PersonName::from_first_middle_last("Colin", "James", "VanDervoort").unwrap(),
+                ],
             },
             title: "algo_practice".to_string(),
             doi: None,
@@ -121,10 +120,10 @@ mod tests {
         let citation = Citation::Book(Book {
             common_data: CommonCitationData {
                 id: "test".to_string(),
-                author: Author::Persons {
-                    persons: vec![PersonName::from_first_last("Test", "Author").unwrap()],
-                },
                 published: None,
+            },
+            author: GenericAuthor::Persons {
+                persons: vec![PersonName::from_first_last("Test", "Author").unwrap()],
             },
             title: "Test Title".to_string(),
             doi: None,

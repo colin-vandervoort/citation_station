@@ -1,21 +1,22 @@
 // cSpell: ignore Popov
 
+use chrono::Month;
 use citation_station::api::{
-    author::{Author, PersonName},
+    author::{GenericAuthor, PersonName},
     citation::Citation,
     date::PublishDate,
     media::{book::Book, common::CommonCitationData},
 };
 
 #[test]
-fn test_apa_formatting_minimal() {
+fn test_book_apa_formatting_minimal() {
     let citation = Citation::Book(Book {
         common_data: CommonCitationData {
             id: "test".to_string(),
-            author: Author::Persons {
-                persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
-            },
             published: Some(PublishDate::from_year(2023)),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
         },
         title: "A Great Paper".to_string(),
         doi: None,
@@ -29,17 +30,17 @@ fn test_apa_formatting_minimal() {
 }
 
 #[test]
-fn test_apa_formatting_two_authors() {
+fn test_book_apa_formatting_two_authors() {
     let citation = Citation::Book(Book {
         common_data: CommonCitationData {
             id: "test".to_string(),
-            author: Author::Persons {
-                persons: vec![
-                    PersonName::from_first_last("J", "Smith").unwrap(),
-                    PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
-                ],
-            },
             published: Some(PublishDate::from_year(2023)),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![
+                PersonName::from_first_last("J", "Smith").unwrap(),
+                PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
+            ],
         },
         title: "A Great Paper".to_string(),
         doi: None,
@@ -49,22 +50,22 @@ fn test_apa_formatting_two_authors() {
     });
 
     let formatted = citation.format_apa();
-    assert_eq!(formatted, "Smith, J. & Fuentes, H. (2023). A Great Paper.");
+    assert_eq!(formatted, "Smith, J., & Fuentes, H. (2023). A Great Paper.");
 }
 
 #[test]
-fn test_apa_formatting_three_authors() {
+fn test_book_apa_formatting_three_authors() {
     let citation = Citation::Book(Book {
         common_data: CommonCitationData {
             id: "test".to_string(),
-            author: Author::Persons {
-                persons: vec![
-                    PersonName::from_first_last("J", "Smith").unwrap(),
-                    PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
-                    PersonName::from_first_last("Isabel", "Popov").unwrap(),
-                ],
-            },
             published: Some(PublishDate::from_year(2023)),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![
+                PersonName::from_first_last("J", "Smith").unwrap(),
+                PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
+                PersonName::from_first_last("Isabel", "Popov").unwrap(),
+            ],
         },
         title: "A Great Paper".to_string(),
         doi: None,
@@ -78,14 +79,14 @@ fn test_apa_formatting_three_authors() {
 }
 
 #[test]
-fn test_ieee_formatting_minimal() {
+fn test_book_ieee_formatting_minimal() {
     let citation = Citation::Book(Book {
         common_data: CommonCitationData {
             id: "test".to_string(),
-            author: Author::Persons {
-                persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
-            },
             published: Some(PublishDate::from_year(2023)),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![PersonName::from_first_last("J", "Smith").unwrap()],
         },
         title: "A Great Paper".to_string(),
         doi: None,
@@ -95,21 +96,21 @@ fn test_ieee_formatting_minimal() {
     });
 
     let formatted = citation.format_ieee();
-    assert_eq!(formatted, "J. Smith, A Great Paper. 2023");
+    assert_eq!(formatted, "J. Smith, A Great Paper. 2023.");
 }
 
 #[test]
-fn test_ieee_formatting_two_authors() {
+fn test_book_ieee_formatting_two_authors() {
     let citation = Citation::Book(Book {
         common_data: CommonCitationData {
             id: "test".to_string(),
-            author: Author::Persons {
-                persons: vec![
-                    PersonName::from_first_last("J", "Smith").unwrap(),
-                    PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
-                ],
-            },
             published: Some(PublishDate::from_year(2023)),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![
+                PersonName::from_first_last("J", "Smith").unwrap(),
+                PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
+            ],
         },
         title: "A Great Paper".to_string(),
         doi: None,
@@ -119,22 +120,22 @@ fn test_ieee_formatting_two_authors() {
     });
 
     let formatted = citation.format_ieee();
-    assert_eq!(formatted, "J. Smith and H. Fuentes, A Great Paper. 2023");
+    assert_eq!(formatted, "J. Smith and H. Fuentes, A Great Paper. 2023.");
 }
 
 #[test]
-fn test_ieee_formatting_three_authors() {
+fn test_book_ieee_formatting_three_authors() {
     let citation = Citation::Book(Book {
         common_data: CommonCitationData {
             id: "test".to_string(),
-            author: Author::Persons {
-                persons: vec![
-                    PersonName::from_first_last("J", "Smith").unwrap(),
-                    PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
-                    PersonName::from_first_last("Isabel", "Popov").unwrap(),
-                ],
-            },
             published: Some(PublishDate::from_year(2023)),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![
+                PersonName::from_first_last("J", "Smith").unwrap(),
+                PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
+                PersonName::from_first_last("Isabel", "Popov").unwrap(),
+            ],
         },
         title: "A Great Paper".to_string(),
         doi: None,
@@ -144,5 +145,36 @@ fn test_ieee_formatting_three_authors() {
     });
 
     let formatted = citation.format_ieee();
-    assert_eq!(formatted, "J. Smith, A Great Paper. 2023");
+    assert_eq!(
+        formatted,
+        "J. Smith, H. Fuentes, and I. Popov, A Great Paper. 2023."
+    );
+}
+
+#[test]
+fn test_book_ieee_formatting_three_authors_full_date() {
+    let citation = Citation::Book(Book {
+        common_data: CommonCitationData {
+            id: "test".to_string(),
+            published: Some(PublishDate::from_year_month_day(2023, Month::January, 1).unwrap()),
+        },
+        author: GenericAuthor::Persons {
+            persons: vec![
+                PersonName::from_first_last("J", "Smith").unwrap(),
+                PersonName::from_first_last("Humberto", "Fuentes").unwrap(),
+                PersonName::from_first_last("Isabel", "Popov").unwrap(),
+            ],
+        },
+        title: "A Great Paper".to_string(),
+        doi: None,
+        pages: None,
+        chapter: None,
+        version: None,
+    });
+
+    let formatted = citation.format_ieee();
+    assert_eq!(
+        formatted,
+        "J. Smith, H. Fuentes, and I. Popov, A Great Paper. Jan. 1, 2023."
+    );
 }

@@ -2,7 +2,7 @@ use ordinal::ToOrdinal as _;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::{media::common::CommonCitationData, page_range::PageRange},
+    api::{author::GenericAuthor, media::common::CommonCitationData, page_range::PageRange},
     unicode::{EMDASH, LEFT_QUOTE, RIGHT_QUOTE},
 };
 
@@ -43,6 +43,8 @@ impl BookVersion {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Book {
     pub common_data: CommonCitationData,
+    /// Author
+    pub author: GenericAuthor,
     /// Book title
     pub title: String,
     /// Chapter

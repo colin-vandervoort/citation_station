@@ -3,7 +3,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::api::errors::NameError;
 
-const IEEE_ET_AL_CUTOFF: usize = 6;
+const IEEE_ACADEMIC_ET_AL_CUTOFF: usize = 6;
+const APA_GENERIC_ET_AL_CUTOFF: usize = 5;
 
 fn first_grapheme_from_str(s: &str) -> Option<&str> {
     UnicodeSegmentation::graphemes(s, true).take(1).next()
@@ -137,25 +138,82 @@ impl PersonName {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum Author {
+pub enum AcademicAuthor {
     Persons { persons: Vec<PersonName> },
     Organization { name: String },
 }
 
-impl Author {
+impl AcademicAuthor {
     pub fn as_ieee_string(&self) -> Option<String> {
         match self {
-            Author::Persons { persons } => match persons.as_slice() {
+            AcademicAuthor::Persons { persons } => match persons.as_slice() {
                 [] => None,
-                [first] => Some(first.as_ieee_string()),
+                [first] => Some(format!("{},", first.as_ieee_string())),
                 [first, second] => Some(format!(
-                    "{} and {}",
+                    "{} and {},",
                     first.as_ieee_string(),
                     second.as_ieee_string()
                 )),
                 [all @ ..] => {
-                    if all.len() > IEEE_ET_AL_CUTOFF {
-                        Some(format!("{} et al.", all.first().unwrap().as_ieee_string()))
+                    if all.len() > IEEE_ACADEMIC_ET_AL_CUTOFF {
+                        Some(format!("{} et al.,", all.first().unwrap().as_ieee_string()))
+                    } else {
+                        let mut persons_iter = all.into_iter();
+                        let last_person = persons_iter.next_back().unwrap();
+                        let persons_except_last = persons_iter
+                            .map(|person| person.as_ieee_string())
+                            .collect::<Vec<String>>()
+                            .join(", ");
+
+                        Some(format!(
+                            "{}, and {},",
+                            persons_except_last,
+                            last_person.as_ieee_string()
+                        ))
+                    }
+                }
+            },
+            AcademicAuthor::Organization { name } => Some(format!("{},", name.clone())),
+        }
+    }
+
+    pub fn as_apa_string(&self) -> Option<String> {
+        match self {
+            AcademicAuthor::Persons { persons } => match persons.as_slice() {
+                [] => None,
+                [first] => Some(first.as_apa_string()),
+                [first, second] => Some(format!(
+                    "{} & {}",
+                    first.as_apa_string(),
+                    second.as_apa_string()
+                )),
+                [all @ ..] => Some(format!("{} et al.", all.first().unwrap().as_apa_string())),
+            },
+            AcademicAuthor::Organization { name } => Some(name.clone()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum GenericAuthor {
+    Persons { persons: Vec<PersonName> },
+    Organization { name: String },
+}
+
+impl GenericAuthor {
+    pub fn as_ieee_string(&self) -> Option<String> {
+        match self {
+            GenericAuthor::Persons { persons } => match persons.as_slice() {
+                [] => None,
+                [first] => Some(format!("{},", first.as_ieee_string())),
+                [first, second] => Some(format!(
+                    "{} and {},",
+                    first.as_ieee_string(),
+                    second.as_ieee_string()
+                )),
+                [all @ ..] => {
+                    if all.len() > IEEE_ACADEMIC_ET_AL_CUTOFF {
+                        Some(format!("{} et al.,", all.first().unwrap().as_ieee_string()))
                     } else {
                         // let mut s = all.into_iter().map(|person| person.as_ieee_string()).collect().join(", ");
                         let mut persons_iter = all.into_iter();
@@ -166,30 +224,47 @@ impl Author {
                             .join(", ");
 
                         Some(format!(
-                            "{} and {}",
+                            "{}, and {},",
                             persons_except_last,
                             last_person.as_ieee_string()
                         ))
                     }
                 }
             },
-            Author::Organization { name } => Some(name.clone()),
+            GenericAuthor::Organization { name } => Some(format!("{},", name.clone())),
         }
     }
 
     pub fn as_apa_string(&self) -> Option<String> {
         match self {
-            Author::Persons { persons } => match persons.as_slice() {
+            GenericAuthor::Persons { persons } => match persons.as_slice() {
                 [] => None,
                 [first] => Some(first.as_apa_string()),
                 [first, second] => Some(format!(
-                    "{} & {}",
+                    "{}, & {}",
                     first.as_apa_string(),
                     second.as_apa_string()
                 )),
-                [all @ ..] => Some(format!("{} et al.", all.first().unwrap().as_apa_string())),
+                [all @ ..] => {
+                    if all.len() > APA_GENERIC_ET_AL_CUTOFF {
+                        let mut persons_iter = all.into_iter();
+                        let last_person = persons_iter.next_back().unwrap();
+                        let persons_except_last = persons_iter
+                            .map(|person| person.as_ieee_string())
+                            .collect::<Vec<String>>()
+                            .join(", ");
+
+                        Some(format!(
+                            "{}, & {}",
+                            persons_except_last,
+                            last_person.as_ieee_string()
+                        ))
+                    } else {
+                        Some(format!("{} et al.", all.first().unwrap().as_apa_string()))
+                    }
+                }
             },
-            Author::Organization { name } => Some(name.clone()),
+            GenericAuthor::Organization { name } => Some(name.clone()),
         }
     }
 }
@@ -211,48 +286,51 @@ impl Editors {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::author::{Author, PersonName};
+    use crate::api::author::{AcademicAuthor, PersonName};
 
     #[test]
-    fn test_format_person_author_ieee_last_name_only() {
-        let author = Author::Persons {
+    fn test_format_person_academic_author_ieee_last_name_only() {
+        let author = AcademicAuthor::Persons {
             persons: vec![PersonName::from_last("Doe").unwrap()],
         };
 
-        assert_eq!(author.as_ieee_string(), Some("Doe".to_string()))
+        assert_eq!(author.as_ieee_string(), Some("Doe,".to_string()))
     }
 
     #[test]
-    fn test_format_person_author_ieee_first_last() {
-        let author = Author::Persons {
+    fn test_format_person_academic_author_ieee_first_last() {
+        let author = AcademicAuthor::Persons {
             persons: vec![PersonName::from_first_last("Jane", "Doe").unwrap()],
         };
 
-        assert_eq!(author.as_ieee_string(), Some("J. Doe".to_string()))
+        assert_eq!(author.as_ieee_string(), Some("J. Doe,".to_string()))
     }
 
     #[test]
-    fn test_format_person_author_ieee_first_middle_last() {
-        let author = Author::Persons {
+    fn test_format_person_academic_author_ieee_first_middle_last() {
+        let author = AcademicAuthor::Persons {
             persons: vec![PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap()],
         };
 
-        assert_eq!(author.as_ieee_string(), Some("J. D. Doe".to_string()))
+        assert_eq!(author.as_ieee_string(), Some("J. D. Doe,".to_string()))
     }
 
     #[test]
-    fn test_format_org_author_ieee() {
+    fn test_format_org_academic_author_ieee() {
         let org_name = "The Corporation";
-        let author = Author::Organization {
+        let author = AcademicAuthor::Organization {
             name: org_name.to_string(),
         };
 
-        assert_eq!(author.as_ieee_string(), Some(org_name.to_string()))
+        assert_eq!(
+            author.as_ieee_string(),
+            Some(format!("{},", org_name.to_string()))
+        )
     }
 
     #[test]
-    fn test_format_person_author_apa_last_name_only() {
-        let author = Author::Persons {
+    fn test_format_person_academic_author_apa_last_name_only() {
+        let author = AcademicAuthor::Persons {
             persons: vec![PersonName::from_last("Doe").unwrap()],
         };
 
@@ -260,8 +338,8 @@ mod tests {
     }
 
     #[test]
-    fn test_format_person_author_apa_first_last() {
-        let author = Author::Persons {
+    fn test_format_person_academic_author_apa_first_last() {
+        let author = AcademicAuthor::Persons {
             persons: vec![PersonName::from_first_last("Jane", "Doe").unwrap()],
         };
 
@@ -269,8 +347,8 @@ mod tests {
     }
 
     #[test]
-    fn test_format_person_author_apa_first_middle_last() {
-        let author = Author::Persons {
+    fn test_format_person_academic_author_apa_first_middle_last() {
+        let author = AcademicAuthor::Persons {
             persons: vec![PersonName::from_first_middle_last("Jane", "Dilly", "Doe").unwrap()],
         };
 
@@ -278,9 +356,9 @@ mod tests {
     }
 
     #[test]
-    fn test_format_org_author_apa() {
+    fn test_format_org_academic_author_apa() {
         let org_name = "The Corporation";
-        let author = Author::Organization {
+        let author = AcademicAuthor::Organization {
             name: org_name.to_string(),
         };
 

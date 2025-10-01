@@ -2,9 +2,36 @@ use std::cmp::Ordering;
 
 use chrono::{DateTime, Datelike, Month, Utc};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-pub struct InvalidYmdError;
+/// Get the abbreviated name of the month (e.g. "Jan."")
+pub fn ieee_abbreviated_month_name(month: &Month) -> &'static str {
+    match month {
+        Month::January => "Jan.",
+        Month::February => "Feb.",
+        Month::March => "Mar.",
+        Month::April => "Apr.",
+        Month::May => "May",
+        Month::June => "Jun.",
+        Month::July => "Jul.",
+        Month::August => "Aug.",
+        Month::September => "Sep.",
+        Month::October => "Oct.",
+        Month::November => "Nov.",
+        Month::December => "Dec.",
+    }
+}
 
+#[derive(Error, Debug)]
+pub enum PublishDateParamError {
+    #[error("The provided day does not exist in the provided year/month combination.")]
+    InvalidDayForMonth,
+    #[error("The provided year is outside of the accepted range.")]
+    InvalidYear,
+}
+
+/// This data model doesn't accommodate ranges of dates, like
+/// what would be seen in a conference.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct PublishDate {
     year: i32,
@@ -29,7 +56,11 @@ impl PublishDate {
         }
     }
 
-    pub fn from_year_month_day(year: i32, month: Month, day: u32) -> Result<Self, InvalidYmdError> {
+    pub fn from_year_month_day(
+        year: i32,
+        month: Month,
+        day: u32,
+    ) -> Result<Self, PublishDateParamError> {
         let maybe_days_in_month = month.num_days(year);
         if let Some(days_in_month) = maybe_days_in_month {
             let valid_day_range = 1..(u32::from(days_in_month));
@@ -40,10 +71,10 @@ impl PublishDate {
                     day: Some(day),
                 })
             } else {
-                Result::Err(InvalidYmdError)
+                Result::Err(PublishDateParamError::InvalidDayForMonth)
             }
         } else {
-            Result::Err(InvalidYmdError)
+            Result::Err(PublishDateParamError::InvalidYear)
         }
     }
 
