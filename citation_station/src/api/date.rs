@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use chrono::{DateTime, Datelike, Month, Utc};
+use chrono::{DateTime, Datelike, Local, Month, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -125,3 +125,67 @@ impl PartialOrd for PublishDate {
 }
 
 impl Eq for PublishDate {}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct AccessDate {
+    accessed: DateTime<Utc>,
+}
+
+impl AccessDate {
+    pub fn year(&self) -> i32 {
+        self.accessed.year()
+    }
+
+    pub fn month(&self) -> Month {
+        Month::try_from(self.accessed.month() as u8).unwrap()
+    }
+
+    pub fn day(&self) -> u32 {
+        self.accessed.day()
+    }
+}
+
+impl Default for AccessDate {
+    fn default() -> Self {
+        Self {
+            accessed: Utc::now(),
+        }
+    }
+}
+
+impl From<DateTime<Utc>> for AccessDate {
+    fn from(value: DateTime<Utc>) -> Self {
+        Self { accessed: value }
+    }
+}
+
+impl From<DateTime<Local>> for AccessDate {
+    fn from(value: DateTime<Local>) -> Self {
+        Self {
+            accessed: value.to_utc(),
+        }
+    }
+}
+
+impl From<NaiveDate> for AccessDate {
+    fn from(value: NaiveDate) -> Self {
+        let accessed_utc = value.and_hms_opt(0, 0, 0).unwrap().and_utc();
+        Self {
+            accessed: accessed_utc,
+        }
+    }
+}
+
+impl Ord for AccessDate {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.accessed.cmp(&other.accessed)
+    }
+}
+
+impl PartialOrd for AccessDate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Eq for AccessDate {}

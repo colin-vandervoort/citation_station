@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::api::{
-    date::{PublishDate, ieee_abbreviated_month_name},
+    date::PublishDate,
     media::{
         book::Book,
         conference_paper::{ConferencePaperOnline, ConferenceProceedingsOnline},
@@ -46,7 +46,10 @@ impl Citation {
                 conference_proceedings_online.common_data.id.clone()
             }
             Citation::OnlineManual(online_manual) => online_manual.common_data.id.clone(),
-            Citation::OnlineVideo(online_video) => online_video.common_data.id.clone(),
+            Citation::OnlineVideo(online_video) => match online_video {
+                OnlineVideo::Generic { common_data, .. } => common_data.id.clone(),
+                OnlineVideo::YouTube { common_data, .. } => common_data.id.clone(),
+            },
         }
     }
 
@@ -60,7 +63,10 @@ impl Citation {
                 conference_proceedings_online.title.clone()
             }
             Citation::OnlineManual(online_manual) => online_manual.title.clone(),
-            Citation::OnlineVideo(online_video) => online_video.title.clone(),
+            Citation::OnlineVideo(online_video) => match online_video {
+                OnlineVideo::Generic { title, .. } => title.clone(),
+                OnlineVideo::YouTube { title, .. } => title.clone(),
+            },
         }
     }
 
@@ -74,7 +80,10 @@ impl Citation {
                 conference_proceedings_online.common_data.published.clone()
             }
             Citation::OnlineManual(online_manual) => online_manual.common_data.published.clone(),
-            Citation::OnlineVideo(online_video) => online_video.common_data.published.clone(),
+            Citation::OnlineVideo(online_video) => match online_video {
+                OnlineVideo::Generic { common_data, .. } => common_data.published.clone(),
+                OnlineVideo::YouTube { common_data, .. } => common_data.published.clone(),
+            },
         }
     }
 

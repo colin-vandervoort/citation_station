@@ -1,12 +1,9 @@
-use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    api::{
-        author::GenericAuthor,
-        media::{common::CommonCitationData, version::GenericMediaVersion},
-    },
-    unicode::{LEFT_QUOTE, RIGHT_QUOTE},
+use crate::api::{
+    author::GenericAuthor,
+    date::AccessDate,
+    media::{common::CommonCitationData, version::GenericMediaVersion},
 };
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
@@ -31,7 +28,7 @@ pub struct OnlineManual {
     /// DOI, library database provider, or URL
     pub available_at: OnlineManualAvailability,
     /// When the resource was viewed
-    pub accessed: NaiveDate,
+    pub accessed: AccessDate,
 }
 
 impl OnlineManual {
