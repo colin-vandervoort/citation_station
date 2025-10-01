@@ -1,3 +1,4 @@
+pub mod abbrev;
 pub mod api;
 pub mod html;
 mod unicode;
