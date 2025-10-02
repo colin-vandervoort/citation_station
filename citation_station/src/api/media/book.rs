@@ -6,7 +6,6 @@ use crate::{
     api::{
         author::GenericAuthor,
         citation::{ApaFormatting, IeeeFormatting},
-        date::ieee_abbreviated_month_name,
         media::{common::CommonCitationData, version::GenericMediaVersion},
         page_range::PageRange,
     },

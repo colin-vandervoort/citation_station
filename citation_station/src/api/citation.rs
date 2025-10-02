@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
 use crate::api::{
@@ -17,13 +19,6 @@ pub trait IeeeFormatting {
 pub trait ApaFormatting {
     fn citation_string(&self) -> String;
 }
-
-// #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-// pub struct LocationData {
-//     pub city: String,
-//     pub state: Option<String>,
-//     pub country: String,
-// }
 
 /// A bibliographic entry representing a citable work
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -106,5 +101,43 @@ impl Citation {
             Citation::OnlineManual(_online_manual) => todo!(),
             Citation::OnlineVideo(_online_video) => todo!(),
         }
+    }
+}
+
+impl fmt::Display for Citation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.format_apa())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::api::{
+        author::{GenericAuthor, PersonName},
+        citation::Citation,
+        media::{book::Book, common::CommonCitationData},
+    };
+
+    #[test]
+    fn test_citation_creation() {
+        let citation = Citation::Book(Book {
+            common_data: CommonCitationData {
+                id: "cv_algo_practice".to_string(),
+                published: None,
+            },
+            author: GenericAuthor::Persons {
+                persons: vec![
+                    PersonName::from_first_middle_last("Colin", "James", "VanDervoort").unwrap(),
+                ],
+            },
+            title: "algo_practice".to_string(),
+            doi: None,
+            pages: None,
+            chapter: None,
+            version: None,
+        });
+
+        assert_eq!(citation.id(), "cv_algo_practice");
+        assert_eq!(citation.title(), "algo_practice");
     }
 }
