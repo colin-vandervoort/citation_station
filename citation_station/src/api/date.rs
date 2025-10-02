@@ -27,33 +27,25 @@ pub enum PublishDateParamError {
     #[error("The provided day does not exist in the provided year/month combination.")]
     InvalidDayForMonth,
     #[error("The provided year is outside of the accepted range.")]
-    InvalidYear,
+    OutOfRangeYear,
 }
 
 /// This data model doesn't accommodate ranges of dates, like
 /// what would be seen in a conference.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct PublishDate {
-    year: i32,
-    month: Option<Month>,
-    day: Option<u32>,
+pub enum PublishDate {
+    Year { year: i32 },
+    YearMonth { year: i32, month: Month },
+    YearMonthDay { year: i32, month: Month, day: u32 },
 }
 
 impl PublishDate {
     pub const fn from_year(year: i32) -> Self {
-        Self {
-            year,
-            month: None,
-            day: None,
-        }
+        Self::Year { year }
     }
 
     pub const fn from_year_month(year: i32, month: Month) -> Self {
-        Self {
-            year,
-            month: Some(month),
-            day: None,
-        }
+        Self::YearMonth { year, month }
     }
 
     pub fn from_year_month_day(
@@ -65,51 +57,79 @@ impl PublishDate {
         if let Some(days_in_month) = maybe_days_in_month {
             let valid_day_range = 1..(u32::from(days_in_month));
             if valid_day_range.contains(&day) {
-                Result::Ok(Self {
+                Result::Ok(Self::YearMonthDay {
                     year,
-                    month: Some(month),
-                    day: Some(day),
+                    month: month,
+                    day: day,
                 })
             } else {
                 Result::Err(PublishDateParamError::InvalidDayForMonth)
             }
         } else {
-            Result::Err(PublishDateParamError::InvalidYear)
+            Result::Err(PublishDateParamError::OutOfRangeYear)
         }
     }
 
     pub fn from_chrono_utc_datetime(datetime: DateTime<Utc>) -> Self {
-        Self {
+        let month = Month::try_from(datetime.month() as u8).unwrap();
+        Self::YearMonthDay {
             year: datetime.year(),
-            month: Month::try_from(u8::try_from(datetime.month()).unwrap()).ok(),
-            day: Some(datetime.day()),
+            month,
+            day: datetime.day(),
         }
     }
 
     pub const fn year(&self) -> i32 {
-        self.year
+        match self {
+            PublishDate::Year { year } => *year,
+            PublishDate::YearMonth { year, .. } => *year,
+            PublishDate::YearMonthDay { year, .. } => *year,
+        }
     }
 
     pub const fn month(&self) -> Option<Month> {
-        self.month
+        match self {
+            PublishDate::Year { .. } => None,
+            PublishDate::YearMonth { month, .. } => Some(*month),
+            PublishDate::YearMonthDay { month, .. } => Some(*month),
+        }
     }
 
     pub const fn day(&self) -> Option<u32> {
-        self.day
+        match self {
+            PublishDate::Year { .. } => None,
+            PublishDate::YearMonth { .. } => None,
+            PublishDate::YearMonthDay { day, .. } => Some(*day),
+        }
+    }
+
+    pub fn fmt_for_ieee_citation(&self) -> String {
+        match self {
+            PublishDate::Year { year } => format!("({}).", year),
+            PublishDate::YearMonth { year, month } => {
+                format!("({}, {}).", ieee_abbreviated_month_name(&month), year)
+            }
+            PublishDate::YearMonthDay { year, month, day } => format!(
+                "({} {}, {}).",
+                ieee_abbreviated_month_name(&month),
+                day,
+                year,
+            ),
+        }
     }
 }
 
 impl Ord for PublishDate {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.year
-            .cmp(&other.year)
-            .then(match (self.month, &other.month) {
+        self.year()
+            .cmp(&other.year())
+            .then(match (self.month(), &other.month()) {
                 (None, None) => Ordering::Equal,
                 (None, Some(_)) => Ordering::Less,
                 (Some(_), None) => Ordering::Greater,
                 (Some(month), Some(other_month)) => month.cmp(other_month),
             })
-            .then(match (self.day, &other.day) {
+            .then(match (self.day(), &other.day()) {
                 (None, None) => Ordering::Equal,
                 (None, Some(_)) => Ordering::Less,
                 (Some(_), None) => Ordering::Greater,
