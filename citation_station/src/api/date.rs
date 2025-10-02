@@ -105,16 +105,23 @@ impl PublishDate {
 
     pub fn fmt_for_ieee_citation(&self) -> String {
         match self {
-            PublishDate::Year { year } => format!("({}).", year),
+            PublishDate::Year { year } => format!("{}", year),
             PublishDate::YearMonth { year, month } => {
-                format!("({}, {}).", ieee_abbreviated_month_name(&month), year)
+                format!("{}, {}", ieee_abbreviated_month_name(&month), year)
             }
-            PublishDate::YearMonthDay { year, month, day } => format!(
-                "({} {}, {}).",
-                ieee_abbreviated_month_name(&month),
-                day,
-                year,
-            ),
+            PublishDate::YearMonthDay { year, month, day } => {
+                format!("{} {}, {}", ieee_abbreviated_month_name(&month), day, year,)
+            }
+        }
+    }
+
+    pub fn fmt_for_apa_citation(&self) -> String {
+        match self {
+            PublishDate::Year { year } => format!("{}", year),
+            PublishDate::YearMonth { year, month } => format!("{}, {}", year, month.name()),
+            PublishDate::YearMonthDay { year, month, day } => {
+                format!("{}, {} {}", year, month.name(), day)
+            }
         }
     }
 }
@@ -162,6 +169,19 @@ impl AccessDate {
 
     pub fn day(&self) -> u32 {
         self.accessed.day()
+    }
+
+    pub fn fmt_for_ieee_citation(&self) -> String {
+        format!(
+            "{} {}, {}",
+            ieee_abbreviated_month_name(&self.month()),
+            self.day(),
+            self.year()
+        )
+    }
+
+    pub fn fmt_for_apa_citation(&self) -> String {
+        format!("{}, {} {}", self.year(), self.month().name(), self.day())
     }
 }
 

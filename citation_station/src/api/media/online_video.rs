@@ -8,6 +8,13 @@ use crate::api::{
     media::common::CommonCitationData,
 };
 
+/// A video that was accessed via the internet.
+///
+/// IEEE formatting rules taken from:
+/// * https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf
+///
+/// APA formatting rules taken from:
+/// * https://apastyle.apa.org/style-grammar-guidelines/references/examples/youtube-references
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum OnlineVideo {
     Generic {
@@ -40,21 +47,7 @@ impl IeeeFormatting for OnlineVideo {
                 // TODO: owner location
                 parts.push(format!("{}.", title));
                 if let Some(published) = &common_data.published {
-                    parts.push(match (published.month(), published.day()) {
-                        (None, None) => format!("({}).", published.year()),
-                        (None, Some(_day)) => panic!(),
-                        (Some(month), None) => format!(
-                            "({}, {}).",
-                            ieee_abbreviated_month_name(&month),
-                            published.year(),
-                        ),
-                        (Some(month), Some(day)) => format!(
-                            "({} {}, {}).",
-                            ieee_abbreviated_month_name(&month),
-                            day,
-                            published.year(),
-                        ),
-                    });
+                    parts.push(format!("({}).", published.fmt_for_ieee_citation()));
                 }
                 parts.push(format!(
                     "Accessed: {} {}, {}. [Online Video].",
@@ -84,14 +77,7 @@ impl ApaFormatting for OnlineVideo {
             } => {
                 let mut parts: Vec<String> = vec![format!("{}.", channel)];
                 if let Some(published) = &common_data.published {
-                    parts.push(match (published.month(), published.day()) {
-                        (None, None) => format!("({}).", published.year()),
-                        (None, Some(_day)) => panic!(),
-                        (Some(month), None) => format!("({}, {}).", published.year(), month.name()),
-                        (Some(month), Some(day)) => {
-                            format!("({}, {} {}).", published.year(), month.name(), day)
-                        }
-                    });
+                    parts.push(format!("({}).", published.fmt_for_apa_citation()));
                 }
                 parts.push(format!("{} [Video]. YouTube.", title));
                 if let Some(url) = maybe_url {

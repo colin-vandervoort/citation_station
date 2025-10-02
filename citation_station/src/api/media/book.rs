@@ -32,12 +32,13 @@ pub struct Book {
 
 impl IeeeFormatting for Book {
     fn citation_string(&self) -> String {
-        let authors_editors = if let Some(authors) = &self.author.as_ieee_string() {
-            format!("{} ", authors)
-        } else {
-            "".to_string()
-        };
-        let title_version = match (&self.chapter, &self.version) {
+        let mut parts: Vec<String> = Vec::new();
+
+        if let Some(authors) = &self.author.as_ieee_string() {
+            parts.push(format!("{},", authors));
+        }
+
+        parts.push(match (&self.chapter, &self.version) {
             (None, None) => format!("{}.", self.title),
             (None, Some(version)) => format!("{}, {}", self.title, version.as_ieee_string()),
             (Some(chapter), None) => format!(
@@ -52,28 +53,13 @@ impl IeeeFormatting for Book {
                 self.title,
                 version.as_ieee_string()
             ),
-        };
-        let published = if let Some(publish_date) = &self.common_data.published {
-            match (publish_date.month(), publish_date.day()) {
-                (None, None) => format!(" {}.", publish_date.year()),
-                (None, Some(_day)) => panic!(),
-                (Some(month), None) => format!(
-                    " {}, {}.",
-                    ieee_abbreviated_month_name(&month),
-                    publish_date.year()
-                ),
-                (Some(month), Some(day)) => format!(
-                    " {} {}, {}.",
-                    ieee_abbreviated_month_name(&month),
-                    day,
-                    publish_date.year()
-                ),
-            }
-        } else {
-            "".to_string()
-        };
+        });
 
-        format!("{}{}{}", authors_editors, title_version, published)
+        if let Some(published) = &self.common_data.published {
+            parts.push(format!("{}.", published.fmt_for_ieee_citation()));
+        }
+
+        parts.join(" ")
     }
 }
 

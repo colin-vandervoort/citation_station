@@ -205,15 +205,15 @@ impl GenericAuthor {
         match self {
             GenericAuthor::Persons { persons } => match persons.as_slice() {
                 [] => None,
-                [first] => Some(format!("{},", first.as_ieee_string())),
+                [first] => Some(format!("{}", first.as_ieee_string())),
                 [first, second] => Some(format!(
-                    "{} and {},",
+                    "{} and {}",
                     first.as_ieee_string(),
                     second.as_ieee_string()
                 )),
                 [all @ ..] => {
                     if all.len() > IEEE_ACADEMIC_ET_AL_CUTOFF {
-                        Some(format!("{} et al.,", all.first().unwrap().as_ieee_string()))
+                        Some(format!("{} et al.", all.first().unwrap().as_ieee_string()))
                     } else {
                         // let mut s = all.into_iter().map(|person| person.as_ieee_string()).collect().join(", ");
                         let mut persons_iter = all.into_iter();
@@ -224,7 +224,7 @@ impl GenericAuthor {
                             .join(", ");
 
                         Some(format!(
-                            "{}, and {},",
+                            "{}, and {}",
                             persons_except_last,
                             last_person.as_ieee_string()
                         ))
