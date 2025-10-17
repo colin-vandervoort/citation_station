@@ -5,6 +5,15 @@
 
 A Rust workspace for managing bibliographic citations and references.
 
+== Inspirations / related code
+
+* link:https://www.bibtex.org/[BibTex]
+* link:https://www.zotero.org/[zotero]
+** https://github.com/zotero/citeproc-rs
+* link:https://endnote.com/[EndNote]
+* link:https://citationstyles.org/[CSL]
+* https://github.com/mgmeyers/obsidian-pandoc-reference-list
+
 == License
 
 Licensed under either of
