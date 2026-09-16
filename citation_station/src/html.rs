@@ -1,6 +1,6 @@
 use scraper::{Html, Selector};
 
-pub struct WebsiteTitle {
+pub struct WebpageTitle {
     from_title_tag: Option<String>,
     // from_og_title: Option<String>,
     // from_schema_thing_headline: Option<String>,
@@ -17,7 +17,7 @@ impl HtmlParser {
         Self { title_selector }
     }
 
-    pub fn parse_title(&self, html: Html) -> WebsiteTitle {
+    pub fn parse_title(&self, html: Html) -> WebpageTitle {
         let html_title = html
             .select(&self.title_selector)
             .into_iter()
@@ -25,7 +25,7 @@ impl HtmlParser {
             .next()
             .and_then(|title_tag| Some(title_tag.inner_html().to_string()));
 
-        WebsiteTitle {
+        WebpageTitle {
             from_title_tag: html_title,
             // from_og_title: None,
             // from_schema_thing_headline: None,
