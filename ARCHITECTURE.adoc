@@ -25,75 +25,22 @@ endif::[]
 ----
 classDiagram
     class Citation {
+        &lt;&lt;Enumeration&gt;&gt;
         Book
         ConferencePaper
         ConferenceProceedings
         OnlineManual
-        PrintManual
-        OnlineVideo
         OnlineStandard
         OnlineThesis
+        OnlineVideo
+        PrintManual
     }
 
     class Bibliography {
         +Array#lt;Citation#gt; citations
     }
 
-    Bibliography --* Citation
+    Bibliography *-- Citation
 ----
 
-'''
-
-[source,rust]
-----
-pub struct CommonCitationData {
-    pub id: String,
-    pub title: String,
-}
-
-pub struct PageRange {
-    pub start: u32,
-    pub end: u32,
-}
-
-pub struct LocationData {
-    pub city: String,
-    pub state: Option<String>,
-    pub country: String
-}
-
-struct Book {
-    common_data: CommonCitationData,
-    doi: Option<String>,
-    pages: Option<PageRange>,
-}
-
-struct ConferencePaperOnline {
-    common_data: CommonCitationData,
-    conference_name: String,
-    conference_date: chrono::DateTime<chrono::Utc>,
-}
-
-struct ConferenceProceedingsOnline {
-    common_data: CommonCitationData,
-    conference_name: String,
-    conference_date: chrono::DateTime<chrono::Utc>,
-}
-
-struct OnlineManual {
-    common_data: CommonCitationData,
-}
-
-pub enum Citation {
-    Book,
-    ConferencePaperOnline
-    ConferenceProceedingsOnline,
-    OnlineManual,
-}
-
-impl Citation {
-    pub fn format_ieee(&self) -> String {
-        todo!();
-    }
-}
-----
+Most data models are defined in the `citation_station/src/api` directory. See the link:./citation_station/src/api/media/book.rs[Book model] for an example.

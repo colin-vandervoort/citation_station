@@ -5,6 +5,12 @@
 
 A Rust workspace for managing bibliographic citations and references.
 
+This repository is in the early stages of development, expect lots of `todo!()`
+
+The first priority is handling IEEE-style citations, followed by APA.
+
+See the link:./ARCHITECTURE.adoc[architecture document for further technical detail]
+
 == Inspirations / related code
 
 * link:https://www.bibtex.org/[BibTex]
