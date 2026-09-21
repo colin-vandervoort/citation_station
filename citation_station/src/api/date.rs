@@ -55,7 +55,7 @@ impl PublishDate {
     ) -> Result<Self, PublishDateParamError> {
         let maybe_days_in_month = month.num_days(year);
         if let Some(days_in_month) = maybe_days_in_month {
-            let valid_day_range = 1..(u32::from(days_in_month));
+            let valid_day_range = 1..=(u32::from(days_in_month));
             if valid_day_range.contains(&day) {
                 Result::Ok(Self::YearMonthDay {
                     year,
@@ -229,3 +229,19 @@ impl PartialOrd for AccessDate {
 }
 
 impl Eq for AccessDate {}
+
+#[cfg(test)]
+mod test {
+    use chrono::Month::January;
+
+    use crate::api::date::PublishDate;
+
+    #[test]
+    fn test_from_year_month_day() {
+        let publish_date_beginning_of_month = PublishDate::from_year_month_day(2026, January, 1);
+        assert!(publish_date_beginning_of_month.is_ok());
+
+        let publish_date_end_of_month = PublishDate::from_year_month_day(2026, January, 31);
+        assert!(publish_date_end_of_month.is_ok());
+    }
+}
