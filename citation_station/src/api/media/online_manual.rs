@@ -54,7 +54,7 @@ impl IeeeFormatting for OnlineManual {
         }
 
         if let Some(published) = &self.common_data.published {
-            parts.push(format!("({}).", published.fmt_for_apa_citation()));
+            parts.push(format!("({}).", published.fmt_for_ieee_citation()));
         }
 
         parts.push(format!(
